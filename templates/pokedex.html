@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="level">
+        <div class="level-left">
+            <div class="level-item">
+                <div class="field has-addons">
+                    <div class="control">
+                        <input class="input" type="text" placeholder="Buscar Pokémon...">
+                    </div>
+                    <div class="control">
+                        <button class="button is-info">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="level-right">
+            <div class="level-item">
+                <a href="{{ url_for('agregar') }}" class="button is-success is-rounded">
+                    <span class="icon">
+                        <i class="fas fa-plus"></i>
+                    </span>
+                    <span>Agregar Pokémon</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if pokemones %}
+    <div class="columns is-multiline">
+        {% for pokemon in pokemones %}
+        <div class="column is-one-third">
+            <div class="card pokemon-card">
+                <div class="card-header">
+                    <div class="card-header-title is-size-5 has-text-weight-bold">
+                        <span class="icon">
+                            <i class="fas fa-hashtag has-text-grey"></i>
+                        </span>
+                        <span class="has-text-grey-light">#{{ pokemon[0] }}</span>
+                        <span class="has-text-primary ml-2">{{ pokemon[1] }}</span>
+                    </div>
+                    <div class="card-header-icon">
+                        <span class="level-badge">
+                            <i class="fas fa-chart-line"></i>
+                            Lv. {{ pokemon[3] }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="card-content">
+                    <div class="content">
+                        <div class="tags are-medium mb-3">
+                            <span class="tag is-info type-badge">
+                                <i class="fas fa-tag"></i>
+                                {{ pokemon[2] }}
+                            </span>
+                        </div>
+                        
+                        <div class="field is-grouped is-grouped-multiline">
+                            <div class="control">
+                                <div class="tags has-addons">
+                                    <span class="tag is-dark">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </span>
+                                    <span class="tag is-light">{{ pokemon[4] }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if pokemon[5] %}
+                            <div class="control">
+                                <div class="tags has-addons">
+                                    <span class="tag is-warning">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </span>
+                                    <span class="tag is-light">{{ pokemon[5] }}</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if pokemon[6] %}
+                        <p class="has-text-grey">
+                            <i class="fas fa-quote-left"></i>
+                            {{ pokemon[6] }}
+                            <i class="fas fa-quote-right"></i>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <footer class="card-footer">
+                    <a href="{{ url_for('editar', id=pokemon[0]) }}" class="card-footer-item has-text-warning-dark">
+                        <span class="icon">
+                            <i class="fas fa-edit"></i>
+                        </span>
+                        <span>Editar</span>
+                    </a>
+                    <form action="{{ url_for('eliminar', id=pokemon[0]) }}" method="POST" class="card-footer-item" style="border: none;">
+                        <button type="submit" class="button is-text has-text-danger" onclick="return confirm('¿Estás seguro de liberar a {{ pokemon[1] }}?')">
+                            <span class="icon">
+                                <i class="fas fa-trash"></i>
+                            </span>
+                            <span>Liberar</span>
+                        </button>
+                    </form>
+                </footer>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="container has-text-centered">
+        <div class="notification is-warning is-light">
+            <div class="icon is-large">
+                <i class="fas fa-search fa-2x"></i>
+            </div>
+            <h2 class="title is-4">¡Tu Pokédex está vacía!</h2>
+            <p class="subtitle">Comienza tu aventura agregando tu primer Pokémon</p>
+            <a href="{{ url_for('agregar') }}" class="button is-success is-medium mt-3">
+                <span class="icon">
+                    <i class="fas fa-plus-circle"></i>
+                </span>
+                <span>Capturar Primer Pokémon</span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Pokémon - Pokédex{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="columns is-centered">
+        <div class="column is-half">
+            <div class="card">
+                <div class="card-header has-background-warning">
+                    <p class="card-header-title has-text-white is-size-4">
+                        <span class="icon">
+                            <i class="fas fa-edit"></i>
+                        </span>
+                        Actualizar Pokémon #{{ pokemon[0] }}
+                    </p>
+                </div>
+                <div class="card-content">
+                    <div class="notification is-info is-light">
+                        <span class="icon">
+                            <i class="fas fa-hashtag"></i>
+                        </span>
+                        Editando Pokémon con ID: <strong>#{{ pokemon[0] }}</strong>
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-signature"></i>
+                                Nombre del Pokémon
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="text" name="nombre" value="{{ pokemon[1] }}" required>
+                                <span class="icon is-left">
+                                    <i class="fas fa-dragon"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-tag"></i>
+                                Tipo Principal
+                            </label>
+                            <div class="control has-icons-left">
+                                <div class="select is-fullwidth is-medium">
+                                    <select name="tipo" required>
+                                        <option value="Agua" {% if pokemon[2] == 'Agua' %}selected{% endif %}>💧 Agua</option>
+                                        <option value="Fuego" {% if pokemon[2] == 'Fuego' %}selected{% endif %}>🔥 Fuego</option>
+                                        <option value="Planta" {% if pokemon[2] == 'Planta' %}selected{% endif %}>🌿 Planta</option>
+                                        <option value="Eléctrico" {% if pokemon[2] == 'Eléctrico' %}selected{% endif %}>⚡ Eléctrico</option>
+                                        <option value="Psíquico" {% if pokemon[2] == 'Psíquico' %}selected{% endif %}>🔮 Psíquico</option>
+                                        <option value="Lucha" {% if pokemon[2] == 'Lucha' %}selected{% endif %}>🥊 Lucha</option>
+                                        <option value="Volador" {% if pokemon[2] == 'Volador' %}selected{% endif %}>🕊️ Volador</option>
+                                        <option value="Veneno" {% if pokemon[2] == 'Veneno' %}selected{% endif %}>☠️ Veneno</option>
+                                        <option value="Tierra" {% if pokemon[2] == 'Tierra' %}selected{% endif %}>🏜️ Tierra</option>
+                                        <option value="Roca" {% if pokemon[2] == 'Roca' %}selected{% endif %}>🪨 Roca</option>
+                                        <option value="Hielo" {% if pokemon[2] == 'Hielo' %}selected{% endif %}>❄️ Hielo</option>
+                                        <option value="Bicho" {% if pokemon[2] == 'Bicho' %}selected{% endif %}>🐛 Bicho</option>
+                                        <option value="Fantasma" {% if pokemon[2] == 'Fantasma' %}selected{% endif %}>👻 Fantasma</option>
+                                        <option value="Dragón" {% if pokemon[2] == 'Dragón' %}selected{% endif %}>🐉 Dragón</option>
+                                        <option value="Siniestro" {% if pokemon[2] == 'Siniestro' %}selected{% endif %}>🌑 Siniestro</option>
+                                        <option value="Acero" {% if pokemon[2] == 'Acero' %}selected{% endif %}>⚙️ Acero</option>
+                                        <option value="Hada" {% if pokemon[2] == 'Hada' %}selected{% endif %}>✨ Hada</option>
+                                        <option value="Normal" {% if pokemon[2] == 'Normal' %}selected{% endif %}>⚪ Normal</option>
+                                    </select>
+                                </div>
+                                <span class="icon is-left">
+                                    <i class="fas fa-certificate"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-chart-line"></i>
+                                Nivel
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="number" name="nivel" value="{{ pokemon[3] }}" min="1" max="100" required>
+                                <span class="icon is-left">
+                                    <i class="fas fa-level-up-alt"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-calendar-alt"></i>
+                                Fecha de Captura
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="date" name="fecha_captura" value="{{ pokemon[4] }}" required>
+                                <span class="icon is-left">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-arrow-up"></i>
+                                Próxima Evolución
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="text" name="evolucion" value="{{ pokemon[5] or '' }}" placeholder="Ej: Raichu">
+                                <span class="icon is-left">
+                                    <i class="fas fa-arrow-alt-circle-up"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-file-alt"></i>
+                                Descripción
+                            </label>
+                            <div class="control">
+                                <textarea class="textarea" name="descripcion" placeholder="Describe las características especiales de tu Pokémon..." rows="3">{{ pokemon[6] or '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped is-grouped-centered">
+                            <div class="control">
+                                <button type="submit" class="button is-warning is-medium">
+                                    <span class="icon">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </span>
+                                    <span>Actualizar Pokémon</span>
+                                </button>
+                            </div>
+                            <div class="control">
+                                <a href="{{ url_for('index') }}" class="button is-light is-medium">
+                                    <span class="icon">
+                                        <i class="fas fa-times"></i>
+                                    </span>
+                                    <span>Cancelar</span>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

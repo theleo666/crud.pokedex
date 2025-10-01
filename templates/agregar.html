@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Agregar Pokémon - Pokédex{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="columns is-centered">
+        <div class="column is-half">
+            <div class="card">
+                <div class="card-header has-background-primary">
+                    <p class="card-header-title has-text-white is-size-4">
+                        <span class="icon">
+                            <i class="fas fa-plus-circle"></i>
+                        </span>
+                        Agregar Nuevo Pokémon
+                    </p>
+                </div>
+                <div class="card-content">
+                    <div class="notification is-info is-light">
+                        <span class="icon">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        El ID único se asignará automáticamente al guardar
+                    </div>
+                    
+                    <form method="POST">
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-signature"></i>
+                                Nombre del Pokémon
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="text" name="nombre" placeholder="Ej: Pikachu" required>
+                                <span class="icon is-left">
+                                    <i class="fas fa-dragon"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-tag"></i>
+                                Tipo Principal
+                            </label>
+                            <div class="control has-icons-left">
+                                <div class="select is-fullwidth is-medium">
+                                    <select name="tipo" required>
+                                        <option value="">Selecciona un tipo</option>
+                                        <option value="Agua">💧 Agua</option>
+                                        <option value="Fuego">🔥 Fuego</option>
+                                        <option value="Planta">🌿 Planta</option>
+                                        <option value="Eléctrico">⚡ Eléctrico</option>
+                                        <option value="Psíquico">🔮 Psíquico</option>
+                                        <option value="Lucha">🥊 Lucha</option>
+                                        <option value="Volador">🕊️ Volador</option>
+                                        <option value="Veneno">☠️ Veneno</option>
+                                        <option value="Tierra">🏜️ Tierra</option>
+                                        <option value="Roca">🪨 Roca</option>
+                                        <option value="Hielo">❄️ Hielo</option>
+                                        <option value="Bicho">🐛 Bicho</option>
+                                        <option value="Fantasma">👻 Fantasma</option>
+                                        <option value="Dragón">🐉 Dragón</option>
+                                        <option value="Siniestro">🌑 Siniestro</option>
+                                        <option value="Acero">⚙️ Acero</option>
+                                        <option value="Hada">✨ Hada</option>
+                                        <option value="Normal">⚪ Normal</option>
+                                    </select>
+                                </div>
+                                <span class="icon is-left">
+                                    <i class="fas fa-certificate"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-chart-line"></i>
+                                Nivel
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="number" name="nivel" min="1" max="100" placeholder="1-100" required>
+                                <span class="icon is-left">
+                                    <i class="fas fa-level-up-alt"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-calendar-alt"></i>
+                                Fecha de Captura
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="date" name="fecha_captura" required>
+                                <span class="icon is-left">
+                                    <i class="fas fa-calendar"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-arrow-up"></i>
+                                Próxima Evolución
+                            </label>
+                            <div class="control has-icons-left">
+                                <input class="input is-medium" type="text" name="evolucion" placeholder="Ej: Raichu">
+                                <span class="icon is-left">
+                                    <i class="fas fa-arrow-alt-circle-up"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">
+                                <i class="fas fa-file-alt"></i>
+                                Descripción
+                            </label>
+                            <div class="control">
+                                <textarea class="textarea" name="descripcion" placeholder="Describe las características especiales de tu Pokémon..." rows="3"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="field is-grouped is-grouped-centered">
+                            <div class="control">
+                                <button type="submit" class="button is-success is-medium">
+                                    <span class="icon">
+                                        <i class="fas fa-save"></i>
+                                    </span>
+                                    <span>Guardar Pokémon</span>
+                                </button>
+                            </div>
+                            <div class="control">
+                                <a href="{{ url_for('index') }}" class="button is-light is-medium">
+                                    <span class="icon">
+                                        <i class="fas fa-arrow-left"></i>
+                                    </span>
+                                    <span>Cancelar</span>
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
