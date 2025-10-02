@@ -1,76 +1,56 @@
 import os
-import psycopg2
 from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
-import urllib.parse as up
 
 load_dotenv()
 
+# Crear instancia de Flask
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'default-secret-key')
 
-def get_db_connection():
-    # Para Render PostgreSQL
-    database_url = os.getenv('DATABASE_URL')
-    
-    if database_url:
-        # Parsear la URL para psycopg2
-        up.uses_netloc.append("postgres")
-        url = up.urlparse(database_url)
-        
-        conn = psycopg2.connect(
-            database=url.path[1:],
-            user=url.username,
-            password=url.password,
-            host=url.hostname,
-            port=url.port,
-            sslmode='require'
-        )
-    else:
-        # Conexión local (fallback)
-        conn = psycopg2.connect(
-            host='localhost',
-            database='pokedex_db',
-            user='postgres',
-            password='tu_password_local'
-        )
-    
-    return conn
+# Configuración de la base de datos PostgreSQL
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-def init_db():
-    try:
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('''
-            CREATE TABLE IF NOT EXISTS pokemones (
-                id SERIAL PRIMARY KEY,
-                nombre VARCHAR(100) NOT NULL,
-                tipo VARCHAR(50) NOT NULL,
-                nivel INTEGER NOT NULL,
-                fecha_captura DATE NOT NULL,
-                evolucion VARCHAR(100),
-                descripcion TEXT,
-                fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        conn.commit()
-        cur.close()
-        conn.close()
-        print("✅ Tabla creada/existe correctamente")
-    except Exception as e:
-        print(f"❌ Error al crear tabla: {e}")
+db = SQLAlchemy(app)
 
+# Modelo de la base de datos para Pokémon
+class Pokemon(db.Model):
+    __tablename__ = 'pokemones'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nombre = db.Column(db.String(100), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)
+    nivel = db.Column(db.Integer, nullable=False)
+    fecha_captura = db.Column(db.String(50), nullable=False)  # Usamos String para simplificar
+    evolucion = db.Column(db.String(100))
+    descripcion = db.Column(db.Text)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nombre': self.nombre,
+            'tipo': self.tipo,
+            'nivel': self.nivel,
+            'fecha_captura': self.fecha_captura,
+            'evolucion': self.evolucion,
+            'descripcion': self.descripcion
+        }
+
+# Crear las tablas
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
+# Ruta principal - Lista todos los Pokémon
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('SELECT * FROM pokemones ORDER BY id;')
-    pokemones = cur.fetchall()
-    cur.close()
-    conn.close()
+    pokemones = Pokemon.query.order_by(Pokemon.id).all()
     return render_template('pokedex.html', pokemones=pokemones)
 
-@app.route('/agregar', methods=('GET', 'POST'))
+# Ruta para agregar nuevo Pokémon
+@app.route('/agregar', methods=['GET', 'POST'])
 def agregar():
     if request.method == 'POST':
         nombre = request.form['nombre']
@@ -83,70 +63,53 @@ def agregar():
         if not nombre or not tipo or not nivel or not fecha_captura:
             flash('Por favor completa todos los campos obligatorios', 'danger')
         else:
-            conn = get_db_connection()
-            cur = conn.cursor()
-            cur.execute(
-                'INSERT INTO pokemones (nombre, tipo, nivel, fecha_captura, evolucion, descripcion)'
-                'VALUES (%s, %s, %s, %s, %s, %s)',
-                (nombre, tipo, nivel, fecha_captura, evolucion, descripcion)
+            # Crear nuevo Pokémon
+            nuevo_pokemon = Pokemon(
+                nombre=nombre,
+                tipo=tipo,
+                nivel=nivel,
+                fecha_captura=fecha_captura,
+                evolucion=evolucion,
+                descripcion=descripcion
             )
-            conn.commit()
-            cur.close()
-            conn.close()
+            
+            db.session.add(nuevo_pokemon)
+            db.session.commit()
             flash('¡Pokémon agregado exitosamente a tu Pokédex!', 'success')
             return redirect(url_for('index'))
     
     return render_template('agregar.html')
 
-@app.route('/editar/<int:id>', methods=('GET', 'POST'))
+# Ruta para editar Pokémon
+@app.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar(id):
-    conn = get_db_connection()
-    cur = conn.cursor()
+    pokemon = Pokemon.query.get_or_404(id)
     
     if request.method == 'POST':
-        nombre = request.form['nombre']
-        tipo = request.form['tipo']
-        nivel = request.form['nivel']
-        fecha_captura = request.form['fecha_captura']
-        evolucion = request.form['evolucion']
-        descripcion = request.form['descripcion']
+        pokemon.nombre = request.form['nombre']
+        pokemon.tipo = request.form['tipo']
+        pokemon.nivel = request.form['nivel']
+        pokemon.fecha_captura = request.form['fecha_captura']
+        pokemon.evolucion = request.form['evolucion']
+        pokemon.descripcion = request.form['descripcion']
         
-        if not nombre or not tipo or not nivel or not fecha_captura:
+        if not pokemon.nombre or not pokemon.tipo or not pokemon.nivel or not pokemon.fecha_captura:
             flash('Por favor completa todos los campos obligatorios', 'danger')
         else:
-            cur.execute(
-                'UPDATE pokemones SET nombre = %s, tipo = %s, nivel = %s, fecha_captura = %s, evolucion = %s, descripcion = %s'
-                ' WHERE id = %s',
-                (nombre, tipo, nivel, fecha_captura, evolucion, descripcion, id)
-            )
-            conn.commit()
-            cur.close()
-            conn.close()
+            db.session.commit()
             flash('¡Pokémon actualizado exitosamente!', 'success')
             return redirect(url_for('index'))
     
-    cur.execute('SELECT * FROM pokemones WHERE id = %s', (id,))
-    pokemon = cur.fetchone()
-    cur.close()
-    conn.close()
-    
-    if pokemon is None:
-        flash('Pokémon no encontrado', 'danger')
-        return redirect(url_for('index'))
-    
     return render_template('editar.html', pokemon=pokemon)
 
-@app.route('/eliminar/<int:id>', methods=('POST',))
+# Ruta para eliminar Pokémon
+@app.route('/eliminar/<int:id>', methods=['POST'])
 def eliminar(id):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute('DELETE FROM pokemones WHERE id = %s', (id,))
-    conn.commit()
-    cur.close()
-    conn.close()
+    pokemon = Pokemon.query.get_or_404(id)
+    db.session.delete(pokemon)
+    db.session.commit()
     flash('¡Pokémon liberado exitosamente!', 'warning')
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
