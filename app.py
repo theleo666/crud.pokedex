@@ -37,8 +37,6 @@ class Pokemon(db.Model):
             'evolucion': self.evolucion,
             'descripcion': self.descripcion
         }
-with app.app_context():
-    db.create_all()
 
 # Crear las tablas
 @app.before_first_request
