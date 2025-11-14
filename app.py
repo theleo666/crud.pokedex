@@ -38,78 +38,97 @@ class Pokemon(db.Model):
             'descripcion': self.descripcion
         }
 
-# Crear las tablas
-@app.before_first_request
-def create_tables():
+# Crear las tablas - FORMA CORREGIDA
+with app.app_context():
     db.create_all()
 
 # Ruta principal - Lista todos los Pokémon
 @app.route('/')
 def index():
-    pokemones = Pokemon.query.order_by(Pokemon.id).all()
-    return render_template('pokedex.html', pokemones=pokemones)
+    try:
+        pokemones = Pokemon.query.order_by(Pokemon.id).all()
+        return render_template('pokedex.html', pokemones=pokemones)
+    except Exception as e:
+        flash('Error al cargar los Pokémon: ' + str(e), 'danger')
+        return render_template('pokedex.html', pokemones=[])
 
 # Ruta para agregar nuevo Pokémon
 @app.route('/agregar', methods=['GET', 'POST'])
 def agregar():
     if request.method == 'POST':
-        nombre = request.form['nombre']
-        tipo = request.form['tipo']
-        nivel = request.form['nivel']
-        fecha_captura = request.form['fecha_captura']
-        evolucion = request.form['evolucion']
-        descripcion = request.form['descripcion']
-        
-        if not nombre or not tipo or not nivel or not fecha_captura:
-            flash('Por favor completa todos los campos obligatorios', 'danger')
-        else:
-            # Crear nuevo Pokémon
-            nuevo_pokemon = Pokemon(
-                nombre=nombre,
-                tipo=tipo,
-                nivel=nivel,
-                fecha_captura=fecha_captura,
-                evolucion=evolucion,
-                descripcion=descripcion
-            )
+        try:
+            nombre = request.form['nombre']
+            tipo = request.form['tipo']
+            nivel = request.form['nivel']
+            fecha_captura = request.form['fecha_captura']
+            evolucion = request.form.get('evolucion', '')  # Usar get para campos opcionales
+            descripcion = request.form.get('descripcion', '')  # Usar get para campos opcionales
             
-            db.session.add(nuevo_pokemon)
-            db.session.commit()
-            flash('¡Pokémon agregado exitosamente a tu Pokédex!', 'success')
-            return redirect(url_for('index'))
+            if not nombre or not tipo or not nivel or not fecha_captura:
+                flash('Por favor completa todos los campos obligatorios', 'danger')
+            else:
+                # Crear nuevo Pokémon
+                nuevo_pokemon = Pokemon(
+                    nombre=nombre,
+                    tipo=tipo,
+                    nivel=nivel,
+                    fecha_captura=fecha_captura,
+                    evolucion=evolucion,
+                    descripcion=descripcion
+                )
+                
+                db.session.add(nuevo_pokemon)
+                db.session.commit()
+                flash('¡Pokémon agregado exitosamente a tu Pokédex!', 'success')
+                return redirect(url_for('index'))
+                
+        except Exception as e:
+            db.session.rollback()  # Importante: hacer rollback en caso de error
+            flash('Error al agregar Pokémon: ' + str(e), 'danger')
     
     return render_template('agregar.html')
 
 # Ruta para editar Pokémon
 @app.route('/editar/<int:id>', methods=['GET', 'POST'])
 def editar(id):
-    pokemon = Pokemon.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        pokemon.nombre = request.form['nombre']
-        pokemon.tipo = request.form['tipo']
-        pokemon.nivel = request.form['nivel']
-        pokemon.fecha_captura = request.form['fecha_captura']
-        pokemon.evolucion = request.form['evolucion']
-        pokemon.descripcion = request.form['descripcion']
+    try:
+        pokemon = Pokemon.query.get_or_404(id)
         
-        if not pokemon.nombre or not pokemon.tipo or not pokemon.nivel or not pokemon.fecha_captura:
-            flash('Por favor completa todos los campos obligatorios', 'danger')
-        else:
-            db.session.commit()
-            flash('¡Pokémon actualizado exitosamente!', 'success')
-            return redirect(url_for('index'))
-    
-    return render_template('editar.html', pokemon=pokemon)
+        if request.method == 'POST':
+            pokemon.nombre = request.form['nombre']
+            pokemon.tipo = request.form['tipo']
+            pokemon.nivel = request.form['nivel']
+            pokemon.fecha_captura = request.form['fecha_captura']
+            pokemon.evolucion = request.form.get('evolucion', '')
+            pokemon.descripcion = request.form.get('descripcion', '')
+            
+            if not pokemon.nombre or not pokemon.tipo or not pokemon.nivel or not pokemon.fecha_captura:
+                flash('Por favor completa todos los campos obligatorios', 'danger')
+            else:
+                db.session.commit()
+                flash('¡Pokémon actualizado exitosamente!', 'success')
+                return redirect(url_for('index'))
+        
+        return render_template('editar.html', pokemon=pokemon)
+        
+    except Exception as e:
+        flash('Error al cargar el Pokémon para editar: ' + str(e), 'danger')
+        return redirect(url_for('index'))
 
 # Ruta para eliminar Pokémon
 @app.route('/eliminar/<int:id>', methods=['POST'])
 def eliminar(id):
-    pokemon = Pokemon.query.get_or_404(id)
-    db.session.delete(pokemon)
-    db.session.commit()
-    flash('¡Pokémon liberado exitosamente!', 'warning')
-    return redirect(url_for('index'))
+    try:
+        pokemon = Pokemon.query.get_or_404(id)
+        db.session.delete(pokemon)
+        db.session.commit()
+        flash('¡Pokémon liberado exitosamente!', 'warning')
+        return redirect(url_for('index'))
+        
+    except Exception as e:
+        db.session.rollback()
+        flash('Error al eliminar Pokémon: ' + str(e), 'danger')
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
